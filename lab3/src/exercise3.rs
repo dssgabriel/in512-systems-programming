@@ -27,7 +27,7 @@ pub enum Token {
 /// `Err(ComputeError)`.
 ///
 /// # Example
-/// ```rs
+/// ```
 /// use lab3::exercise3::*;
 /// let r = compute(&[Token::Number(4), Token::Number(3), Token::Op(Operator::Plus)]);
 /// assert_eq!(r, Ok(7));
@@ -43,42 +43,31 @@ pub fn compute(input: &[Token]) -> Result<i32, ComputeError> {
         match token {
             Token::Number(n) => stack.push(*n),
             Token::Op(op) => {
+                // Checking that we have at least 2 operands in the stack
                 if stack.len() < 2 {
-                    // Could return another type of error like `NotEnoughOperands`
+                    // Could return another error type like `StackUnderflow`
                     return Err(ComputeError::EmptyStack);
                 }
 
                 let a = stack.pop().unwrap();
                 let b = stack.pop().unwrap();
-
                 match op {
-                    Operator::Plus => {
-                        let r = b + a;
-                        stack.push(r);
-                    },
-                    Operator::Minus => {
-                        let r = b - a;
-                        stack.push(r);
-                    },
-                    Operator::Times => {
-                        let r = b * a;
-                        stack.push(r);
-                    },
+                    Operator::Plus => stack.push(b + a),
+                    Operator::Minus => stack.push(b - a),
+                    Operator::Times => stack.push(b * a),
                     Operator::Divide => {
                         if a == 0 {
                             return Err(ComputeError::DivisionByZero);
                         }
-                        
-                        let r = b / a;
-                        stack.push(r);
+                        stack.push(b / a);
                     },
                 }
             }
         }
     }
 
-    // Should add additional error type to handle an "unfinished" expression
-    if stack.len() > 1 {
+    // Could return another error type like `UnfinishedExpression`
+    if stack.len() != 1 {
         return Err(ComputeError::EmptyStack);
     }
 

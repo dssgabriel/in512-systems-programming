@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-/// Represents a track with a mark and a title.
+/// Represents a track with a rank and a title.
 #[derive(Debug)]
 pub struct Song {
     rank: u32,
@@ -25,15 +25,16 @@ pub fn average_rank(songs: &Vec<Song>) -> f64 {
 
 /// Filter the tracks in the `songs` list by only keeping those which have
 /// a rank strictly higher than `min_rank`.
-// It would be more idiomatic to use `&[T]` (slices) rather than `&Vec<T>`
+// It would be more idiomatic to use `&[Song]` (slices) rather than `&Vec<Song>`
 pub fn filter_songs(songs: &Vec<Song>, min_rank: u32) -> Vec<Song> {
     let mut filtered_songs: Vec<Song> = Vec::new();
 
     for song in songs {
         match song.rank.cmp(&min_rank) {
             Ordering::Greater => {
-                // Kinda not good, requires a call to `clone` in order to
-                // copy the title which can be expensinve on a long `String`
+                // Kinda not good to create a copy here
+                // It requires a call to `clone` in order to copy
+                // the title which can be expensinve on a long `String`
                 let filtered = Song {
                     rank: song.rank,
                     title: song.title.clone(),
@@ -49,10 +50,9 @@ pub fn filter_songs(songs: &Vec<Song>, min_rank: u32) -> Vec<Song> {
 
 /// Filter the tracks in the `songs` list by only keeping those which have
 /// a rank strictly higher than the average rank of the list of songs.
-// It would be more idiomatic to use `&[T]` (slices) rather than `&Vec<T>`
+// It would be more idiomatic to use `&[Song]` (slices) rather than `&Vec<Song>`
 pub fn good_songs(songs: &Vec<Song>) -> Vec<Song> {
     let average_rank = average_rank(&songs);
-
     filter_songs(songs, average_rank as u32)
 }
 

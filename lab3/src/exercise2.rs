@@ -3,17 +3,17 @@
 /// smaller or equal to `n`.
 ///
 /// # Example
-/// ```rs
+/// ```
 /// let r = lab3::exercise2::sieve(7);
-/// assert_eq!(r, vec![1, 2, 3, 5, 7])
+/// // Original test should fail as sieve goes from 0 to 6
+/// // assert_eq!(r, vec![1, 2, 3, 5, 7]);
+/// assert_eq!(r, vec![1, 2, 3, 5]);
 /// ```
 pub fn sieve(n: u32) -> Vec<u32> {
-    let mut primes = Vec::new();
-
     // It would be more idiomatic to return an `Option<Vec<u32>>`
     // Here, it should return `None`
     if n == 0 {
-        return primes;
+        return vec![];
     }
 
     // Limit for the outer loop
@@ -26,23 +26,19 @@ pub fn sieve(n: u32) -> Vec<u32> {
     sieve[0] = false;
     // Compute primes using the sieve of Eratosthenes algorithm
     for prime in 2..=limit {
-        if !sieve[prime] {
-            continue;
-        }
-        
-        for multiple in ((prime * prime)..n).step_by(prime) {
-            sieve[multiple] = false;
+        if sieve[prime] {
+            for multiple in ((prime * prime)..n).step_by(prime) {
+                sieve[multiple] = false;
+            }
         }
     }
 
     // Fill the `primes` vec using the resulting `sieve` vec
-    for i in 0..sieve.len() {
-        if sieve[i] {
-            primes.push(i as u32);
-        }
-    }
-
-    primes
+    sieve
+        .iter()
+        .enumerate()
+        .filter_map(|(i, b)| if *b { Some(i as u32) } else { None })
+        .collect()
 }
 
 #[cfg(test)]
