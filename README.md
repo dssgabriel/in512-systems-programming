@@ -5,7 +5,7 @@ Vous trouverez ici un dépôt contenant des ***propositions*** de corrections po
 Les codes que vous trouverez ici ne sont pas forcément ceux attendus par les enseignants mais 
 ils vous donneront une bonne idée de comment écrire du code Rust de façon idiomatique.
 
-N'hésitez pas à me contacter sur Discord (`draen#2015`) si vous avez besoin d'aide ou d'éclaircissement sur une de mes corrections !
+N'hésitez pas à me contacter sur Discord (`gabrl#2015`) si vous avez besoin d'aide ou d'éclaircissement sur une de mes corrections !
 
 ## Installation
 Copiez le dépôt git sur votre machine à l'aide de la commande suivante :
