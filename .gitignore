@@ -1,3 +1,6 @@
 # Directories to ignore
-lab1-2/
 lab4/
+**/target/
+
+# Files to ignore
+**/Cargo.lock
