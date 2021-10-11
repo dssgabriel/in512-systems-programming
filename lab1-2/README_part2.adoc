@@ -1,0 +1,82 @@
+= Devine mon nombre ! (2ème partie)
+Stéphane Lopes <stephane.lopes@uvsq.fr>, Pablo de Oliveira Castro <pablo.oliveira@uvsq.fr>
+v2021-2022
+:icons: font
+:experimental:
+
+L'objectif de ce TP est d'illustrer l'usage des outils de développement Rust en réutilisant le code du TP précédent «Devine mon nombre !».
+Pour cela, vous utiliserez le même dépôt `git` que pour le TP «Devine mon nombre !».
+
+[CAUTION]
+====
+* Compilez et exécutez votre programme après chaque modification.
+* Pensez à valider régulièrement votre travail avec `git`.
+* Respectez le https://doc.rust-lang.org/1.0.0/style/[guide de style] Rust dans votre code source.
+====
+
+== Préparer le projet
+. Avant de commencer de nouveaux développements, créez une https://git-scm.com/book/fr/v2/Les-bases-de-Git-%C3%89tiquetage[_étiquette annotée_] (_tag_) git dénommée `v1.0.0` pour marquer la version du TP «Devine mon nombre !» en fin de première séance.
+. Créez une https://git-scm.com/book/fr/v2/Les-branches-avec-Git-Les-branches-en-bref[_branche_] (_branch_) git dénommée `devtools` pour les développements de ce TP. (En fin de séance nous fusionneront cette branche dans `main`.)
+. Utilisez https://github.com/rust-lang/rust-clippy[`cargo clippy`] pour vérifier votre code source et l'améliorer le cas échéant
+. _Factorisez_ votre programme en extrayant les fonctions suivantes
++
+[horizontal]
+`fn get_int_as_a_number() -> Option<u32>`:: retourne l'entier saisi en ignorant les erreurs d'I/O ou de conversion
+`fn get_ordering(secret_number: u32, input: u32) -> Ordering`:: encapsule la comparaison entre le nombre secret et la saisie
+`fn display_result(comparison: Ordering)`:: affiche le message approprié en fonction du résultat de la comparaison
+`fn has_found(comparison: Ordering) -> bool`:: retourne `true` si le nombre a été trouvé
+
+[NOTE]
+====
+La boucle principale devrait ressembler à
+
+[source,rust,indent=0]
+----
+    loop {
+        let input = get_int_as_a_number();
+
+        if let Some(input) = input { // if_let
+            let comparison = get_ordering(secret_number, input);
+            display_result(comparison);
+
+            if has_found(compararison) {
+                break;
+            }
+        } else {
+            println!("Saisie incorrecte");
+        }
+    }
+----
+====
+
+== Documentation de l'API
+. Documentez le _crate_ (commentaires `//!`) et les fonctions (commentaires `///`) de votre programme en respectant les conventions de https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html[`rustdoc`]
+. Exécutez `cargo doc` et visualisez le résultat
+. Ajoutez une section `# Examples` dans la documentation de l'une des fonctions
+
+== Gestion du build
+. Dans quel répertoire Cargo place-t-il le résultat de la compilation ?
+. Lancez à nouveau une compilation avec Cargo mais en ajoutant l'option `--release`.
+Quelles différences voyez-vous ?
+. Masquez le message concernant la valeur du nombre secret lorsque le programme n'est plus en phase de mise au point.
++
+NOTE: Étudiez l'option `--release` de Cargo, la compilation conditionnelle et l'attribut `debug_assertions`.
+. Ajoutez une dépendance vers la bibliothèque https://crates.io/crates/console[`console`]
+. Modifiez votre programme pour que le titre soit affiché en bleu
+
+== Tests unitaires
+. À la fin de votre code source, ajoutez un sous-module `tests` annoté avec `cfg(test)`
+. Ajoutez un https://doc.rust-lang.org/book/ch11-01-writing-tests.html[cas de test] pour la fonction `get_ordering`
+.. créez la fonction `twelve_equals_twelve`
+.. annotez-là avec `test`
+.. appelez `get_ordering` avec 12 pour les deux paramètres
++
+IMPORTANT: pensez à importer le module englobant dans le module de test (`use super::*;`)
+.. vérifiez le résultat avec `assert_eq!`
+. Complétez les tests avec les cas `twelve_greater_than_five` et `twelve_lesser_than_twenty`
+
+== Finaliser le projet
+. Basculez sur la branche principale (`main`) et fusionnez les changements de la branche `devtools`
+. Créez une nouvelle étiquette pour cette version du projet
+. Synchronisez votre projet avec github et envoyez-y également les étiquettes
+. Supprimez la branche locale `devtools`

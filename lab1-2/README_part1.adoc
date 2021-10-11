@@ -1,0 +1,130 @@
+= Devine mon nombre !
+Stéphane Lopes <stephane.lopes@uvsq.fr>, Pablo de Oliveira Castro <pablo.oliveira@uvsq.fr>
+v2021-2022
+:icons: font
+:experimental:
+
+L'objectif de ce TP est d'introduire les notions de base de Rust en réalisant un programme simple implémentant le jeu «Devine mon nombre !».
+Le programme tire un nombre aléatoire entre 1 et 100.
+Le joueur propose des nombres successifs.
+Après chaque tentative, le programme indique si le nombre proposé est trop grand, trop petit, ou si c'est la solution.
+
+Pour cela, le sujet est décomposé en plusieurs sections qui introduisent progressivement les différentes notions.
+Ce sujet est largement inspiré du chapitre https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html[Programming a Guessing Game] du livre https://doc.rust-lang.org/book/title-page.html[The Rust Programming Language].
+
+[CAUTION]
+====
+* Compilez et exécutez votre programme après chaque modification.
+* Pensez à valider régulièrement votre travail avec `git`.
+* Respectez le https://doc.rust-lang.org/1.0.0/style/[guide de style] Rust dans votre code source.
+====
+
+== Initialiser le projet
+. Créez un répertoire `src`, ajoutez-y le prog `hello.rs` vu en cours puis renommez-le en `devine_mon_nombre.rs`.
++
+NOTE: Le nom d'un _crate_ respecte la notation https://doc.rust-lang.org/1.0.0/style/style/naming/README.html[snake_case].
+. Compilez le programme avec `rustc` et vérifiez son bon fonctionnement.
++
+NOTE: Le message `Hello world!` doit apparaître à l'écran.
+. Valider les changements avec `git`
+
+== Lire un nombre
+. Modifier le message affiché par le programme pour qu'apparaisse à l'écran :
++
+....
+Devine mon nombre !
+
+Saisissez votre proposition.
+....
++
+NOTE: Pensez à compiler et tester votre programme après chaque modification. Ce ne sera plus précisé par la suite.
+. Utilisez `read_line` pour lire une valeur saisie par l'utilisateur depuis l'https://doc.rust-lang.org/std/io/index.html#standard-input-and-output[entrée standard].
++
+Cette tâche simple en apparence n'est en fait pas du tout triviale : quel que soit le langage utilisé, elle nécessite une interaction avec le système d'exploitation, l'allocation d'un buffer destiné à recevoir la saisie, le passage de ce dernier à la fonction d'I/O (entrée/sortie) et enfin la gestion des erreurs et débordements de buffer.
++
+Dans le cas qui nous intéresse ici, le buffer sera une variable de type https://doc.rust-lang.org/std/string/struct.String.html[`String`] et nous utiliserons la fonction `read_line` pour lire une ligne de texte depuis l'entrée standard. Enfin, dans un premier temps, les erreurs seront tout simplement ignorées avec la méthode https://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap[`unwrap`].
+
+.. Recherchez la fonction `read_line` (`std::io::Stdin::read_line`) dans la https://doc.rust-lang.org/std/index.html[documentation de la bibliothèque standard].
+.. Ajoutez à la fin de votre programme le code permettant la saisie et l'affichage de la valeur en ignorant, pour l'instant, la valeur de retour de `read_line`.
++
+NOTE: Inspirez-vous de l'exemple fourni dans la https://doc.rust-lang.org/std/io/index.html#standard-input-and-output[documentation de l'entrée et de la sortie standard].
+.. Que signifie la notation `&mut` devant le nom de la variable dans l'appel à `read_line` ?
+.. Quel avertissement renvoie le compilateur à propos de `read_line` ?
+Utilisez la méthode https://doc.rust-lang.org/std/result/enum.Result.html#method.unwrap[`unwrap`] pour supprimer cet avertissement.
+.. Affichez le nombre saisi à l'écran.
+
+NOTE: Pensez à valider régulièrement votre travail avec `git`. Ce ne sera plus précisé par la suite.
+
+== Générer un nombre aléatoire
+La bibliothèque standard Rust ne fournit pas de moyen pour générer un nombre aléatoire.
+Il faudra donc faire appel à une bibliothèque externe pour cela, en l'occurrence le _crate_ https://crates.io/crates/rand[`rand`].
+
+Pour utiliser ce crate, nous allons faire appel à Cargo pour gérer la dépendance avec cette bibliothèque.
+
+. Migrez votre projet sous Cargo
+.. Tapez la commande https://doc.rust-lang.org/cargo/commands/cargo-init.html[`cargo init`] dans le répertoire de votre projet (celui contenant ce `README.adoc`).
+Quels fichiers et répertoires ont été générés par cette commande ?
+.. Déplacez `devine_mon_nombre.rs` vers `src/main.rs`.
+.. Exécutez votre programme avec https://doc.rust-lang.org/cargo/commands/cargo-run.html[`cargo run`].
+Qu'est-ce qui a été généré dans le répertoire ?
+. Ajoutez la bibliothèque externe https://crates.io/crates/rand[`rand`] dans le projet
++
+Cargo conserve la description du projet dans le fichier `Cargo.toml`.
+Vous allez donc éditer ce fichier.
+
+.. Si nécessaire, modifiez l'attribut `name` en `devine_mon_nombre`
+.. En consultant la page du crate https://crates.io/crates/rand[`rand`], ajoutez la dépendance dans `Cargo.toml`.
+.. Construisez le projet avec https://doc.rust-lang.org/cargo/commands/cargo-build.html[`cargo build`].
+Que remarquez-vous ?
+. Générez un nombre aléatoire avec https://docs.rs/rand/0.8.4/rand/trait.Rng.html#method.gen_range[rand::Rng::gen_range]
+.. Conservez le résultat de l'appel de `rand::thread_rng().gen_range(1..101)` dans une variable et construisez le projet. Lisez attentivement l'erreur obtenue.
+.. Ajoutez une clause `use` pour importer le _trait_ adapté et corriger l'erreur précédente.
+.. Faites afficher le nombre généré pour vérification pendant la mise au point du programme.
+
+== Comparer le nombre saisi avec le nombre généré
+Dans cette section, nous allons partir d'une solution très impérative pour la comparaison puis la faire évoluer vers une approche plus fonctionnelle (et plus _rustacean_).
+
+. Convertissez en nombre la valeur saisie en utilisant la méthode https://doc.rust-lang.org/std/primitive.str.html#method.parse[`parse`].
++
+NOTE: Vous pouvez réutiliser le nom de la variable chaîne grâce au https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#shadowing[_Shadowing_].
+. Testez l'égalité des deux nombres en utilisant une construction du type
++
+....
+if condition {
+  println!("Message")
+} else ...
+....
+. Modifiez le test avec `else if` pour prendre en compte les cas «_trop petit_» et «_trop grand_».
+. Remplacez la construction ci-dessus par une construction du type (expression `if`)
++
+....
+let message = if condition ...
+....
+. Faites évoluer le test en utilisant le https://doc.rust-lang.org/book/ch06-00-enums.html[_pattern matching_]
++
+L'opérateur `match` permet de comparer une valeur avec une série de patterns, comme par exemple les valeurs d'une énumération.
+
+.. Utilisez l'énumération https://doc.rust-lang.org/std/cmp/enum.Ordering.html[`std::cmp::Ordering`] et la méthode https://doc.rust-lang.org/std/cmp/trait.Ord.html#tymethod.cmp[`cmp`] pour générer une valeur enumérée à partir de la comparaison.
+.. Remplacez l'expression `if` par une expression `match` sur le résultat de la comparaison.
+
+== Saisir plusieurs propositions
+. Englobez le code de saisie dans une boucle `loop`.
++
+NOTE: L'arrêt du programme peut se faire en utilisant kbd:[Ctrl+C] ou en saisissant une entrée incorrecte.
+. Ajoutez une condition pour sortir de la boucle avec `break`.
+
+== Finaliser l'application
+TIP: Cette section est optionnelle et à réaliser lorsque les autres parties du TP sont terminées.
+
+. Faites en sorte que le programme ignore les saisies incorrectes en utilisant `match` et l'énumération https://doc.rust-lang.org/std/result/enum.Result.html[std::io::Result] au niveau de `parse`.
+. _Factorisez_ votre programme en extrayant les fonctions suivantes
++
+[source,rust,indent=0]
+----
+fn get_int_as_a_number() -> Option<u32> { // ...
+fn get_ordering(secret_number: u32, input: u32) -> Ordering { // ...
+fn display_result(Ordering) { // ...
+----
+. Masquez le message concernant la valeur du nombre secret lorsque le programme n'est plus en phase de mise au point.
++
+NOTE: Étudiez l'option `--release` de Cargo, la compilation conditionnelle et l'attribut `debug_assertions`.
