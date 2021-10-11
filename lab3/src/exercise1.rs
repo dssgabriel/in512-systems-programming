@@ -40,7 +40,7 @@ pub fn filter_songs(songs: &Vec<Song>, min_rank: u32) -> Vec<Song> {
                     title: song.title.clone(),
                 };
                 filtered_songs.push(filtered);
-            },
+            }
             _ => continue,
         }
     }

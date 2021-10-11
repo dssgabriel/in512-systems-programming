@@ -33,7 +33,7 @@ pub fn sieve(n: u32) -> Vec<u32> {
         }
     }
 
-    // Fill the `primes` vec using the resulting `sieve` vec
+    // Generate the resulting vector using `filter_map`
     sieve
         .iter()
         .enumerate()
@@ -61,7 +61,13 @@ mod tests {
     #[test]
     fn n_one_hundred_twenty() {
         let m = sieve(120);
-        assert_eq!(m, vec![1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]);
+        assert_eq!(
+            m,
+            vec![
+                1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
+                79, 83, 89, 97, 101, 103, 107, 109, 113
+            ]
+        );
     }
 
     // Test to "measure" the performance of the algorithm

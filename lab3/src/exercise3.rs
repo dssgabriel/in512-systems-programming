@@ -60,7 +60,7 @@ pub fn compute(input: &[Token]) -> Result<i32, ComputeError> {
                             return Err(ComputeError::DivisionByZero);
                         }
                         stack.push(b / a);
-                    },
+                    }
                 }
             }
         }
@@ -77,11 +77,13 @@ pub fn compute(input: &[Token]) -> Result<i32, ComputeError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn empty() {
         let r = compute(&[]);
         assert_eq!(r, Err(ComputeError::EmptyStack));
     }
+
     #[test]
     fn just_a_number() {
         let r = compute(&[Token::Number(5)]);
