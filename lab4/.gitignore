@@ -1,6 +1,5 @@
 # Directories to ignore
 target/
-figs/
 
 # Files to ignore
 Cargo.lock
