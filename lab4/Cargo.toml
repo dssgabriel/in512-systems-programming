@@ -1,0 +1,7 @@
+[package]
+name = "lab4"
+version = "0.1.0"
+authors = ["Pablo Oliveira <pablo@sifflez.org>", "Stéphane Lopes <stephane.lopes@uvsq.fr"]
+edition = "2018"
+
+[dependencies]

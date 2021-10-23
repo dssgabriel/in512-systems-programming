@@ -1,0 +1,155 @@
+:imagesdir: figs/
+:stem:
+
+== Arbre binaire de recherche 
+
+Dans ce TP nous allons implémenter un
+https://fr.wikipedia.org/wiki/Arbre_binaire_de_recherche[arbre binaire de
+recherche] (ABR) en Rust.  
+
+L'objectif est de nous familiariser avec le système de vérification d'emprunts
+mémoire de Rust (appellé le _Borrow Checker_ en anglais). L'implémentation d'un
+ABR est particulièrement adapté car elle nécessite de manipuler les nombreuses
+références vers les nœuds de l'arbre. 
+
+image:ABR.svg[Arbre Binaire de Recherche]
+
+Les nœuds d'un ABR possèdent chacun une valeur associée unique (deux nœuds ne
+peuvent pas avoir la même valeur). Il existe un ordre total sur l'ensemble des
+valeurs.
+
+Pour un nœud d'un ABR de valeur x, toutes les valeurs du sous-arbre gauche sont
+plus petites que x et toutes les valeurs du sous-arbre droit sont plus grandes
+que x.
+
+Un ABR permet de déterminer si une valeur est présente avec une complexité
+logarithmique.
+
+=== Représentation d'un ABR en Rust
+
+Une première tentative pour représenter un nœud en Rust est
+
+[source,rust]
+----
+pub struct Node {
+    value: i32,
+    left: Node,
+    right: Node
+}
+----
+
+. Essayez de compiler le type suivant avec Rust. Expliquez l'erreur obtenue.
+
+Dans l'erreur retournée, le compilateur nous suggère d'introduire une
+indirection. Les champs `left` et `right` vont contenir des références
+indirectes vers d'autres nœuds.
+
+Parce que nous souhaitons allouer l'ABR sur le tas, nous allons utiliser une référence https://doc.rust-lang.org/std/boxed/index.html[`Box<>`] en introduisant un type `Box<Node>`.
+
+[source,rust]
+----
+pub struct Node {
+    value: i32,
+    left: Box<Node>,
+    right: Box<Node>
+}
+----
+
+Ce nouveau code compile ! Malheureusement il ne nous permet pas de représenter des arbres vides. Cela est indispensable, en effet les feuilles de l'arbre possèdent des sous-arbre gauche et droit vides.
+
+Dans un langage comme C ou C++, nous pourrions utiliser un pointeur nul pour représenter le cas de l'arbre vide. Néanmoins dans Rust les références nulles sont interdites pour éviter des erreurs à l'exécution. À la place Rust préconise l'utilisation d'un type https://doc.rust-lang.org/std/option/index.html[`Option<>`] qui représente une valeur optionelle.
+
+Notre structure devient donc 
+
+[source,rust]
+----
+pub struct Node {
+    value: i32,
+    left: Option<Box<Node>>,
+    right: Option<Box<Node>>
+}
+----
+
+et de manière à permettre de manipuler un arbre vide directement, nous allons la
+réecrire de la manière suivante,
+
+[source,rust]
+----
+#[derive(Debug)]
+pub struct Tree(Option<Box<Node>>);
+
+#[derive(Debug)]
+pub struct Node {
+    value: i32,
+    left: Tree, 
+    right: Tree,
+}
+----
+
+Les macros `#[derive(Debug)]` permettent d'obtenir des routines d'affichage
+pour le debug automatiquement. En les utilisants il est possible d'afficher un objet arbre avec la syntaxe `println!("{:#?}", mon_arbre)`.
+
+Pour représenter un arbre composé d'un unique nœud racine avec la valeur 12 nous
+écririons,
+
+[source,rust]
+----
+    let t = Tree(Some(Box::new(Node {
+            value: 12, 
+            left: Tree(None),
+            right: Tree(None),
+            })));
+    
+    println!("{:#?}", t);
+----
+
+[start=2]
+. Modifiez l'exemple précédent pour rajouter un fils gauche (8) et un fils droit (27). Vérifiez que l'arbre s'affiche correctement.
+
+=== Implémentation de quelques constructeurs
+
+Comme nous venons de le voir, il est pour l'instant fastidieux de manipuler nos structures. Pour faciliter l'utilisation nous allons rajouter quelques constructeurs.
+
+. Implémentez le constructeur `pub fn new() -> Self` pour la structure `Tree`, cette méthode retournera un arbre vide.
+
+. Implémentez le constructeur `pub fn leaf(value: i32) -> Self` qui retournera un nœud de valeur `value` sans enfants.
+
+. Rajoutez des tests pour ces deux méthodes.
+
+
+=== Implémentation de contains et insert 
+
+Pour tester si une valeur appartient à l'ABR il suffit de parcourir l'arbre en partant de la racine. Pour chaque nœud l'on compare la valeur cherchée à la valeur courante. Si elle sont identiques alors nous retournons `true`. Si ce n'est pas le cas nous recursivons soit sur l'arbre gauche lorsque la valeur est inférieure ou l'arbre droit lorsque la valeur est supérieure.
+
+. Implémentez dans `Tree` la méthode `pub fn contains(&self, value: i32) -> bool` qui retourne vrai si et seulement si `value` est présente dans un des nœuds de l'arbre.
+
+Pour rajouter une nouvelle valeur à l'ABR on utilise une méthode similaire. Nous parcourons l'arbre:
+    - si la racine est vide, nous le remplaçons par une feuille avec la nouvelle valeur;
+    - si la racine est pleine, nous vérifions que la valeur n'est pas déjà présente (en effet il n'y a pas de doublons dans un ABR) puis nous recursivons sur le sous-arbre gauche ou le sous-arbre droit de manière à préserver l'invariant d'ordre.
+
+[start=2]
+. Implémentez la méthode `pub fn insert(&mut self, value: i32) -> bool` qui insère `value` dans l'ABR. La méthode retourne `true` lorsque l'insertion est possible et `false` lorsque la valeur est déjà présente dans l'arbre.
+
+. Rajoutez des tests unitaires pour les méthodes `contains` et `insert`.
+
+=== Implémentation de delete
+
+La supression d'une valeur est un peu plus compliquée. Une méthode de supression efficace est expliquée sur https://fr.wikipedia.org/wiki/Arbre_binaire_de_recherche#Suppression[l'article français de Wikipedia].
+
+. Implémentez la méthode `pub fn delete(&mut self, value: i32)` en suivant l'algorithme précédent. La méthode retourne `true` lorsque la supression est possible et retourne `false` lorsque la valeur n'est pas trouvée dans l'ABR.
+
+
+=== Pour aller plus loin...
+
+. Pour l'instant notre ABR utilise des entiers signés 32 bits (`i32`); néanmoins il est facile en utilisant un https://doc.rust-lang.org/book/ch10-01-syntax.html[type générique] de l'étendre à tout type possédant un ordre total.
+Pour spécifier que votre type générique possède un ordre total vous pouvez utiliser le trait `Ord`.
+
+. Plutôt que de retourner un booleen pour vérifier que les opérations `insert` et `delete` se sont bien déroulées il est aussi possible de retourner une erreur à l'aide d'un objet de type `Result<>`. Cela vous permettra d'explorer un autre mécanisme de gestion d'erreurs dans Rust. 
+
+==== Crédits
+
+* Illustation https://fr.wikipedia.org/wiki/Arbre_binaire_de_recherche#/media/Fichier:Binary_search_tree.svg[d’arbre binaire] dans le domaine publique.
+
+* TP similaire dans le cours CIS198 de U. Pennsylvania, https://github.com/cis198-2016s/homework/tree/master/hw02
+
+* Learn Rust with entirely too many linked lists, https://rust-unofficial.github.io/too-many-lists/. Un excellent tutoriel qui montre pas à pas comment implémenter des listes chaînées dans Rust et les problèmes que l'on peut recontrer.
