@@ -6,47 +6,52 @@ type Element = f64;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Matrix {
     n: usize,
-    data: Vec<Element>,
+    values: Vec<Element>,
 }
 
 impl Matrix {
-    pub fn new(n: usize, value: Element) -> Self {
+    pub fn new(n: usize, values: Vec<Element>) -> Self {
         assert!(n != 0, "invalid dimension");
-        Self { n, data: vec![value; n * n] }
+        assert_eq!(n * n, values.len(), "invalid dimension");
+        Self { n, values }
     }
 
-    pub fn from_data(n: usize, data: Vec<Element>) -> Self {
+    pub fn from_value(n: usize, value: Element) -> Self {
         assert!(n != 0, "invalid dimension");
-        Self { n, data }
+        Self { n, values: vec![value; n * n] }
     }
 
     pub fn zeroes(n: usize) -> Self {
-        Self::new(n, 0f64)
+        Self::from_value(n, 0f64)
     }
 
     pub fn ones(n: usize) -> Self {
-        Self::new(n, 1f64)
+        Self::from_value(n, 1f64)
     }
 
-    pub fn identity(n: usize) -> Self {
+    pub fn eye(n: usize, value: Element) -> Self {
         let mut m = Self::zeroes(n);
         for i in 0..n {
-            m[(i, i)] = 1f64;
+            m[(i, i)] = value;
         }
 
         m
+    }
+
+    pub fn identity(n: usize) -> Self {
+        Self::eye(n, 1f64)
     }
 
     pub fn random(n: usize) -> Self {
         let mut rng = rand::thread_rng();
         let between = Uniform::new_inclusive(-1f64, 1f64);
 
-        let mut data = Vec::with_capacity(n * n);
-        for _ in 0..data.capacity() {
-            data.push(between.sample(&mut rng));
+        let mut values = Vec::with_capacity(n * n);
+        for _ in 0..values.capacity() {
+            values.push(between.sample(&mut rng));
         }
 
-        Self::from_data(n, data)
+        Self::new(n, values)
     }
 
     pub fn multiply(a: &Self, b: &Self) -> Self {
@@ -70,13 +75,13 @@ impl Index<(usize, usize)> for Matrix {
     type Output = Element;
 
     fn index(&self, (i, j): (usize, usize)) -> &Self::Output {
-        &self.data[i * self.n + j]
+        &self.values[i * self.n + j]
     }
 }
 
 impl IndexMut<(usize, usize)> for Matrix {
     fn index_mut(&mut self, (i, j): (usize, usize)) -> &mut Self::Output {
-        &mut self.data[i * self.n + j]
+        &mut self.values[i * self.n + j]
     }
 }
 
@@ -86,16 +91,16 @@ mod tests {
 
     #[test]
     fn builds() {
-        let m = Matrix::new(2, 5f64);
+        let m = Matrix::new(2, vec![1f64, 2f64, 3f64, 4f64]);
         assert_eq!(m.n, 2);
-        assert_eq!(m.data, vec![5f64, 5f64, 5f64, 5f64]);
+        assert_eq!(m.values, vec![1f64, 2f64, 3f64, 4f64]);
     }
 
     #[test]
-    fn builds_from_data() {
-        let m = Matrix::from_data(2, vec![1f64, 2f64, 3f64, 4f64]);
+    fn builds_from_value() {
+        let m = Matrix::from_value(2, 2f64);
         assert_eq!(m.n, 2);
-        assert_eq!(m.data, vec![1f64, 2f64, 3f64, 4f64]);
+        assert_eq!(m.values, vec![2f64, 2f64, 2f64, 2f64]);
     }
 
     #[test]
@@ -114,6 +119,15 @@ mod tests {
         assert_eq!(m[(0, 1)], 1f64);
         assert_eq!(m[(1, 0)], 1f64);
         assert_eq!(m[(1, 1)], 1f64);
+    }
+
+    #[test]
+    fn builds_eye() {
+        let m = Matrix::eye(2, 2f64);
+        assert_eq!(m[(0, 0)], 2f64);
+        assert_eq!(m[(0, 1)], 0f64);
+        assert_eq!(m[(1, 0)], 0f64);
+        assert_eq!(m[(1, 1)], 2f64);
     }
 
     #[test]
@@ -148,7 +162,7 @@ mod tests {
 
     #[test]
     fn indexes() {
-        let mut m = Matrix::from_data(2, vec![1f64, 2f64, 3f64, 4f64]);
+        let mut m = Matrix::new(2, vec![1f64, 2f64, 3f64, 4f64]);
         assert_eq!(m[(0, 0)], 1f64);
         assert_eq!(m[(1, 0)], 3f64);
 
