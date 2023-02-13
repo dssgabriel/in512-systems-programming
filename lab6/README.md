@@ -5,12 +5,12 @@ C’est un algorithme classique qui est utilisé dans de nombreux domaines comme
 l’apprentissage automatique, l’analyse de données, les moteurs 3D, les
 simulations physiques, etc.
 
-Ici nous travaillerons avec des matrices carrées de taille `n x n`.
-Le produit de matrices `C = A x B` est défini par l'équation :
+Ici nous travaillerons avec des matrices carrées de taille `n * n`.
+Le produit de matrices `C = A * B` est défini par l'équation :
 ```
-           n
-	c_ij = Σ (a_ik * b_kj)
-	      k=1
+       n     
+c_ij = Σ (a_ik * b_kj)
+      k=1
 ```
 Avec `i` l’indice de ligne et `j` l’indice de colonne de la matrice `C`.
 
@@ -42,7 +42,7 @@ contient bien `n²` valeurs.
 Conseil : Ne pas hésiter à implémenter des tests automatiques pour
 valider l'implémentation de chaque méthode tout au long du TP.
 
-## Implémentation des traits Index et IndexMut
+## Implémentation des traits `Index` et `IndexMut`
 
 Une matrice est une structure à deux dimensions, mais on va la
 stocker sur le vecteur `values` à une seule dimension. Il y a plusieurs
@@ -76,7 +76,7 @@ fn indexes() {
    retourne une matrice de dimension `n` dont les éléments sont tirés
    aléatoirement d’une distribution uniforme sur l'intervalle `[-1, 1]`.
 
-## Installation de l'outil perf
+## Installation de l'outil `perf`
 
 Dans la suite du TP nous allons utiliser l'outil `perf` pour faire diverses
 mesurer de performance. Pour installer l'outil `perf` sous Ubuntu ou Debian
@@ -108,6 +108,7 @@ d'exécution.
    cargo build
    perf stat -e power/energy-pkg/,power/energy-ram/ ./target/debug/matrixmult 256
    ```
+   
    Conseil : Lorsque vous faites des mesures, assurez vous que les valeurs
    mesurées sont significatives et reproductibles. Pour cela vous pouvez
    répéter la mesure plusieurs fois et vérifier que l'écart type est petit par
@@ -146,13 +147,14 @@ on va à nouveau utiliser l'outil `perf`.
    ```
    perf stat -e LLC-loads,LLC-stores ./target/release/matrixmult 1280
    ```
-   - LLC-loads mesure le nombre de lectures depuis le dernier niveau de cache.
-   - LLC-stores mesure le nombre d'écritures sur le dernier niveau de cache.
+   - `LLC-loads` mesure le nombre de lectures depuis le dernier niveau de cache.
+   - `LLC-stores` mesure le nombre d'écritures sur le dernier niveau de cache.
 
 2. Implémenter maintenant une version bloquée de la multiplication matricielle
    `fn multiply_blocked(a: &Matrix, b: &Matrix) -> Matrix`.
    Définissez une constante `BLOCK` dans la classe `Matrix` pour stocker la
    taille du bloc (on peut la fixer à 64).
+   
    Conseil : Vérifier bien que la dimension de vos matrices est un multiple de
    la taille du bloc.
 
@@ -168,7 +170,7 @@ on va à nouveau utiliser l'outil `perf`.
 
 Si notre processeur possède plusieurs cœurs de calcul, nous pouvons paralléliser
 l'algorithme de manière à le rendre encore plus efficace.
-Pour cela nous allons nous appuyer sur la bibliothèque (https://docs.rs/rayon/1.5.1/rayon/)[Rayon].
+Pour cela nous allons nous appuyer sur la bibliothèque [rayon](https://docs.rs/rayon/1.5.1/rayon/).
 
 1. Implémenter une version parallèle du produit matriciel,
    `fn multiply_rayon(a: &Matrix, b: &Matrix) -> Matrix` :
@@ -181,7 +183,7 @@ Pour cela nous allons nous appuyer sur la bibliothèque (https://docs.rs/rayon/1
    utiliser ces deux méthodes pour répartir un calcul sur les lignes de `c`
    et les lignes de `a`.
    - Pour itérer de manière synchronisé sur les lignes des deux itérateurs
-   vous pouvez utiliser (https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.zip)[la méthode `zip`].
+   vous pouvez utiliser [la méthode `zip`](https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.zip).
 
 2. Mesurer l'énergie consommée par l'implémentation parallèle. Comparer les
    mesures aux expériences précédentes. Que peut-on conclure ?
@@ -196,30 +198,30 @@ possible de pousser les optimisations encore plus loin. Voici quelques
 références et pistes, si ce travail vous intéresse :
 - Le compilateur actuel Rust ne réussit pas à vectoriser correctement le
   produit de matrices. Néanmoins il est possible d'utiliser des
-  (https://doc.rust-lang.org/beta/core/arch/)[appels intrinsèques] pour
+  [appels intrinsèques](https://doc.rust-lang.org/beta/core/arch/) pour
   vectoriser manuellement et tirer parti des instructions SIMD du processeur.
 
-Conseil : La vectorisation automatique est un des points faibles de Rust. En
-raison de vérifications plus poussées, comme les débordement de tableaux, Rust
-n'arrive pas toujours à bien vectoriser une boucle. Au contraire des langages
-comme le C ou le Fortran, offrent moins de garanties sur la correction mémoire,
-mais vectorisent généralement mieux le code.
+  Conseil : La vectorisation automatique est un des points faibles de Rust. En
+  raison de vérifications plus poussées, comme les débordement de tableaux, Rust
+  n'arrive pas toujours à bien vectoriser une boucle. Au contraire des langages
+  comme le C ou le Fortran, offrent moins de garanties sur la correction mémoire,
+  mais vectorisent généralement mieux le code.
 
 - Plutôt qu'utiliser des techniques de blocking, qui doivent être paramétrisées
-par une taille de bloc fixe; il est possible d'implementer la multiplication
-matricielle pour préserver la localité indépendamment de l'échelle.
-C'est ce qu'on appelle en anglais un (https://dspace.mit.edu/bitstream/handle/1721.1/80568/43558192-MIT.pdf)[algorithme _cache-oblivious_].
-Pour la multiplication de matrices, un tel algorithme peut être obtenu
-en réordonnant les éléments selon l'ordre donné par la (https://fr.wikipedia.org/wiki/Courbe_de_Lebesgue)[courbe de Lebesgue].
-Cela permet d'obtenir des (https://github.com/rayon-rs/rayon/blob/master/rayon-demo/src/matmul/mod.rs)[implémentations très efficaces]
-pour des matrices dont la dimension est une puissance de deux.
+  par une taille de bloc fixe; il est possible d'implementer la multiplication
+  matricielle pour préserver la localité indépendamment de l'échelle.
+  C'est ce qu'on appelle en anglais un [algorithme *cache-oblivious*](https://dspace.mit.edu/bitstream/handle/1721.1/80568/43558192-MIT.pdf).
+  Pour la multiplication de matrices, un tel algorithme peut être obtenu
+  en réordonnant les éléments selon l'ordre donné par la [courbe de Lebesgue](https://fr.wikipedia.org/wiki/Courbe_de_Lebesgue).
+  Cela permet d'obtenir des [implémentations très efficaces](https://github.com/rayon-rs/rayon/blob/master/rayon-demo/src/matmul/mod.rs)
+  pour des matrices dont la dimension est une puissance de deux.
 
 - La parallélisation que nous vous avons proposé se révèle très efficace.
-Néanmoins il est possible d'aller encore plus vite en utilisant une
-décomposition en blocs et la multiplication proposée par (https://fr.wikipedia.org/wiki/Algorithme_de_Strassen)[Strassen].
+  Néanmoins il est possible d'aller encore plus vite en utilisant une
+  décomposition en blocs et la multiplication proposée par [Strassen](https://fr.wikipedia.org/wiki/Algorithme_de_Strassen).
 
 ## Crédits
 
 - Illustation d’ordre des lignes adapté de l’image de
-(https://commons.wikimedia.org/wiki/File:Row_and_column_major_order.svg)[Cmglee],
+[Cmglee](https://commons.wikimedia.org/wiki/File:Row_and_column_major_order.svg),
 en CC BY-SA 4.0.
